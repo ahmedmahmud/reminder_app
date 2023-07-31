@@ -1,0 +1,46 @@
+name: "Continuous Integration"
+
+on: push
+
+env:
+  BACK_END_URL: https://drp-14-server.herokuapp.com
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: "11"
+          distribution: "microsoft"
+          cache: "gradle"
+
+      - name: Validate Gradle wrapper
+        uses: gradle/wrapper-validation-action@v1
+
+      - name: Setup Node  
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install modules
+        run: npm install
+
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build application
+        run: |
+             cd ./android
+             ./gradlew assembleRelease
+
+      - name: Upload application
+        uses: actions/upload-artifact@v3
+        with:
+          name: drp_14_app
+          path: ./android/app/build/outputs/apk/release/app-release.apk
+          retention-days: 3
